@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -338,5 +337,4 @@ Command Line Flags:
         ParseArgs(args);
         Extract();
     }
->>>>>>> ef095bafc7dae9c375598cb272572f885a3c8853
 }
