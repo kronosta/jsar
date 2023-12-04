@@ -16,11 +16,12 @@
         "@END" must not have any whitespace around it or anything else!
     -r  Supposed to specify that it can extract to existing files, but that seems to
         be the regular behavior anyway.
-    -o  Specifies an output directory to write to, relative to the current directory.
+    -o  Specifies an output directory to write to, relative to the current directory
     -h  Pulls up the message you are reading right now.
 --help  Alias for -h.
     -?  Alias for -h.
 ```
+An argument ending in `.jsa` will be interpreted as a file name to read the JSON from. 
 
 # Format
 The format is a single `JSARTopLevel` in JSON format, representing the current directory that is active when JSAR is called, or alternatively, the directory specified by `-o`.
