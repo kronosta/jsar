@@ -3,6 +3,8 @@
 
  JSAR now runs in .NET 6.0, so you will need to have that installed (previous versions used two standalone .NET Core 3.1 versions, for Linux and Windows; for those check out previous commits to this repo in December 2023, but be aware they have no archive functionality)
 
+ Currently JSAR does not do binary files correctly, so it is suitable only for text files or other text-based formats (this includes JSAR archives if you like nesting). Note that JSAR archives can have commands, so you could try to generate them using those, however that isn't cross-platform.
+
 # Command Line Flags
 ```
     -E  Enables executable code to be run.
