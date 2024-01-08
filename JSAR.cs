@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.IO.Compression;
+using System.Linq;
 
 public class JSARTopLevel
 {
@@ -28,7 +30,7 @@ public class JSARCommand
 public class JSAR
 {
     public static string jsarText = "";
-    public static bool canExecute = false, canRewrite = false;
+    public static bool canExecute = false, canRewrite = false, verbose = false, willExtract = true;
     public static void ParseArgs(string[] args)
     {
         for (int i = 0; i < args.Length; i++)
@@ -88,12 +90,41 @@ Command Line Flags:
     -r  Supposed to specify that it can extract to existing files, but that seems to
         be the regular behavior anyway.
     -o  Specifies an output directory to write to, relative to the current directory.
+    -A  Archives the folder referred to by the first following argument to an archive
+        named by the second following argument.
+        Note that using -A will cause the program to not do any extraction on the other
+        arguments.
+        Example: dotnet JSAR.dll -A my-folder my-folder.jsa
+    -v  Verbose output. If -A is also used, -v must come first for it to work right.
+        Currently only archiving uses this at all.
     -h  Pulls up the message you are reading right now.
 --help  Alias for -h.
     -?  Alias for -h.
-    
 ");
                 Environment.Exit(0);
+            }
+            else if (args[i] == "-A")
+            {
+                i++;
+                string dirFrom = args[i];
+                i++;
+                string archiveName = args[i];
+                string prevCurrentDirectory = Environment.CurrentDirectory;
+                Environment.CurrentDirectory = dirFrom;
+                if (verbose) Console.WriteLine("Full path of -A directory: {0}", Environment.CurrentDirectory);
+                Archive(dirFrom, Environment.CurrentDirectory,
+                    new JSARTopLevel
+                    {
+                        Files = new Dictionary<string, JSARFile>(),
+                        Directories = new Dictionary<string, JSARTopLevel>(),
+                        Commands = new List<JSARCommand>()
+                    }, true, archiveName
+                );
+                Environment.CurrentDirectory = prevCurrentDirectory;
+            }
+            else if (args[i] == "-v")
+            {
+                verbose = true;
             }
             else if (args[i].ToLower().EndsWith(".jsa"))
             {
@@ -162,9 +193,51 @@ Command Line Flags:
             }
         }
     }
+
+    public static void Archive(string dirNameFrom, string dirNameTo, JSARTopLevel building, bool topLevel, string archiveName)
+    {
+        foreach (string fileName in Directory.EnumerateFiles(Environment.CurrentDirectory))
+        {
+            if (verbose) Console.WriteLine("Filename: {0}", fileName);
+            using (StreamReader reader = new StreamReader(fileName))
+            {
+                string contents = reader.ReadToEnd();
+                building.Files.Add(Path.GetFileName(fileName), new JSARFile
+                {
+                    Contents = new List<string> { contents }
+                });
+            }
+        }
+        foreach (string subdirName_ in Directory.EnumerateDirectories(Environment.CurrentDirectory))
+        {
+            string subdirName = Path.Combine(dirNameFrom, Path.GetRelativePath(dirNameFrom, subdirName_));
+            if (verbose) Console.WriteLine("Subdirname: {0}", subdirName);
+            JSARTopLevel newDirStructure = new JSARTopLevel
+            {
+                Files = new Dictionary<string, JSARFile>(),
+                Directories = new Dictionary<string, JSARTopLevel>(),
+                Commands = new List<JSARCommand>()
+            };
+            building.Directories.Add(Path.GetRelativePath(Environment.CurrentDirectory, subdirName), newDirStructure);
+            string prevCurrentDirectory = Environment.CurrentDirectory;
+            Environment.CurrentDirectory = subdirName;
+            Archive(subdirName, dirNameTo, newDirStructure, false, archiveName);
+            Environment.CurrentDirectory = prevCurrentDirectory;
+        }
+        if (topLevel)
+        {
+            string prevCurrentDirectory = Environment.CurrentDirectory;
+            Environment.CurrentDirectory = Directory.GetParent(Environment.CurrentDirectory).FullName;
+            using (StreamWriter writer = new StreamWriter(archiveName))
+            {
+                writer.Write(JsonSerializer.Serialize<JSARTopLevel>(building));
+            }
+            Environment.CurrentDirectory = prevCurrentDirectory;
+        }
+    }
     public static void Main(string[] args)
     {
         ParseArgs(args);
-        Extract();
+        if (willExtract) Extract();
     }
 }
