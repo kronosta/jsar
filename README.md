@@ -1,7 +1,7 @@
 # jsar
  A human-readable uncompressed archive format for distributing multiple files in one textbox.
 
- JSAR now runs in .NET 6.0, so you will need to have that installed (previous versions used two standalone .NET Core 3.1 versions, for Linux and Windows; for those check out previous commits to this repo, but be aware they have no archive functionality)
+ JSAR now runs in .NET 6.0, so you will need to have that installed (previous versions used two standalone .NET Core 3.1 versions, for Linux and Windows; for those check out previous commits to this repo in December 2023, but be aware they have no archive functionality)
 
 # Command Line Flags
 ```
