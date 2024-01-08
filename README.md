@@ -1,5 +1,5 @@
 # jsar
- A human-readable uncompressed archive format for distributing multiple files in one textbox.
+ A human-readable uncompressed archive format for distributing multiple files in one textbox. Note that this currently only has a dearchive function, but I plan to add a folder-to-JSAR option later.
 
 # Command Line Flags
 ```
